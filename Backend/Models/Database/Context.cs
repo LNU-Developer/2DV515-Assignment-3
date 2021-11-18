@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 #nullable disable
 
@@ -16,6 +15,7 @@ namespace Backend.Models.Database
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Rating> Ratings { get; set; }
         public virtual DbSet<Word> Words { get; set; }
+        public virtual DbSet<WordReference> WordReferences { get; set; }
         public virtual DbSet<Blog> Blogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

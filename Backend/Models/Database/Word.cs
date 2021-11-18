@@ -1,16 +1,18 @@
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Backend.Models.Database
 {
     public partial class Word
     {
+        public Word()
+        {
+            WordReferences = new HashSet<WordReference>();
+        }
         public int WordId { get; set; }
         [Required]
         public string WordTitle { get; set; }
-        public int Count { get; set; }
-        [Required]
-        public int BlogId { get; set; }
-        public virtual Blog Blog { get; set; }
+        public ICollection<WordReference> WordReferences { get; set; }
 
     }
 }

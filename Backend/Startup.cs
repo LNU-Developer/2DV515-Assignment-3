@@ -68,7 +68,11 @@ namespace Backend
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
             {
                 using (var context = serviceScope.ServiceProvider.GetService<Context>())
-                    AddDataAsync(context);
+                {
+                    AddRecommendationData(context);
+                    AddClusterData(context);
+                }
+
             }
 
             if (env.IsDevelopment())
@@ -92,7 +96,12 @@ namespace Backend
             });
         }
 
-        private static void AddDataAsync(Context context)
+        private static void AddClusterData(Context context)
+        {
+
+        }
+
+        private static void AddRecommendationData(Context context)
         {
             context.Database.EnsureCreated();
             var parserOptions = new CsvParserOptions(skipHeader: true, fieldsSeparator: ';');
