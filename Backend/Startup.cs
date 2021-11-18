@@ -13,6 +13,10 @@ using Backend.Models.CsvMappings;
 using System.Text;
 using System.Linq;
 using Backend.Models.Repositories;
+using System.IO;
+using System.Collections.Generic;
+using System;
+using Newtonsoft.Json;
 
 namespace Backend
 {
@@ -51,7 +55,10 @@ namespace Backend
                       });
             });
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(options =>
+               {
+                   options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+               }); ;
             services.AddRouting(options => options.LowercaseUrls = true);
 
             services.AddSwaggerGen(c =>
@@ -69,6 +76,7 @@ namespace Backend
             {
                 using (var context = serviceScope.ServiceProvider.GetService<Context>())
                 {
+                    context.Database.EnsureCreated();
                     AddRecommendationData(context);
                     AddClusterData(context);
                 }
@@ -98,12 +106,43 @@ namespace Backend
 
         private static void AddClusterData(Context context)
         {
+            using (var reader = new StreamReader("SeedData/blogdata.txt"))
+            {
+                string firstLine = reader.ReadLine();
+                string[] unstructuredWords = firstLine.Split('\t');
 
+                var words = new List<Word>();
+
+                for (int i = 1; i < unstructuredWords.Length; i++) //Index 0 in this case is the column title Blogs, and not applicable for this dataset
+                    words.Add(new Word { WordTitle = unstructuredWords[i] });
+                context.Words.AddRange(words);
+                context.SaveChanges();
+
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine();
+                    var values = line.Split('\t');
+                    var blog = new Blog();
+                    blog.BlogTitle = values[0];
+                    context.Blogs.Add(blog);
+                    context.SaveChanges();
+                    for (int i = 1; i < values.Length; i++)
+                    {
+                        var wordReference = new WordReference
+                        {
+                            BlogId = blog.BlogId,
+                            WordId = i,
+                            Count = Int32.Parse(values[i])
+                        };
+                        context.WordReferences.Add(wordReference);
+                    }
+                }
+                context.SaveChanges();
+            }
         }
 
         private static void AddRecommendationData(Context context)
         {
-            context.Database.EnsureCreated();
             var parserOptions = new CsvParserOptions(skipHeader: true, fieldsSeparator: ';');
 
             var userParser = new CsvParser<User>(parserOptions, new UserCsvMapping());

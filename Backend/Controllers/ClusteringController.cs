@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Backend.Models.Services;
+using Backend.Models.Repositories;
 
 namespace Backend.Controllers
 {
@@ -8,10 +8,16 @@ namespace Backend.Controllers
     [Route("[controller]")]
     public class ClusteringController : ControllerBase
     {
-        public ClusteringController()
+        private readonly IUnitOfWork _unitOfWork;
+        public ClusteringController(IUnitOfWork unitOfWork)
         {
-
+            _unitOfWork = unitOfWork;
         }
 
+        [HttpGet()]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            return Ok(await _unitOfWork.Blogs.GetAllBlogsWithData());
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace Backend.Models.Repositories
 {
     public interface IBlogRepository : IRepository<Blog>
     {
+        Task<List<Blog>> GetAllBlogsWithData();
     }
 
 }
