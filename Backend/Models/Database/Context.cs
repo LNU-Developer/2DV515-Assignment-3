@@ -10,14 +10,13 @@ namespace Backend.Models.Database
         public Context(DbContextOptions<Context> options)
             : base(options)
         {
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
-            DbPath = $"{path}{System.IO.Path.DirectorySeparatorChar}Recommendation.db";
         }
 
         public virtual DbSet<Movie> Movies { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Rating> Ratings { get; set; }
+        public virtual DbSet<Word> Words { get; set; }
+        public virtual DbSet<Blog> Blogs { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

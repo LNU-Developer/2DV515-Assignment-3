@@ -13,11 +13,15 @@ namespace Backend.Models.Repositories
             Movies = new MovieRepository(_context);
             Ratings = new RatingRepository(_context);
             Users = new UserRepository(_context);
+            Words = new WordRepository(_context);
+            Blogs = new BlogRepository(_context);
         }
 
         public IMovieRepository Movies { get; private set; }
         public IRatingRepository Ratings { get; private set; }
         public IUserRepository Users { get; private set; }
+        public IBlogRepository Blogs { get; private set; }
+        public IWordRepository Words { get; private set; }
 
         public Task<int> CompleteAsync()
         {

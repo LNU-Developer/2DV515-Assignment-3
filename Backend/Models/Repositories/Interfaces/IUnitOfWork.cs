@@ -8,6 +8,8 @@ namespace Backend.Models.Repositories
         IUserRepository Users { get; }
         IMovieRepository Movies { get; }
         IRatingRepository Ratings { get; }
+        IWordRepository Words { get; }
+        IBlogRepository Blogs { get; }
         Task<int> CompleteAsync();
         int Complete();
     }
