@@ -5,6 +5,7 @@ namespace Backend.Models.Repositories
 {
     public interface IWordRepository : IRepository<Word>
     {
+        Task<List<Word>> GetAllWordsWithWordReferences();
     }
 
 }

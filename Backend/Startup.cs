@@ -116,7 +116,6 @@ namespace Backend
                 for (int i = 1; i < unstructuredWords.Length; i++) //Index 0 in this case is the column title Blogs, and not applicable for this dataset
                     words.Add(new Word { WordTitle = unstructuredWords[i] });
                 context.Words.AddRange(words);
-                context.SaveChanges();
 
                 while (!reader.EndOfStream)
                 {
@@ -125,14 +124,19 @@ namespace Backend
                     var blog = new Blog();
                     blog.BlogTitle = values[0];
                     context.Blogs.Add(blog);
-                    context.SaveChanges();
                     for (int i = 1; i < values.Length; i++)
                     {
+                        var count = Int32.Parse(values[i]);
+                        var max = words[i - 1].Max;
+                        var min = words[i - 1].Min;
+                        if (max < count) words[i - 1].Max = count;  //Solving structuring problem in readin of the data.
+                        if (min > count) words[i - 1].Min = count;  //Solving structuring problem in readin of the data.
+
                         var wordReference = new WordReference
                         {
-                            BlogId = blog.BlogId,
+                            Blog = blog,
                             WordId = i,
-                            Count = Int32.Parse(values[i])
+                            Count = count
                         };
                         context.WordReferences.Add(wordReference);
                     }

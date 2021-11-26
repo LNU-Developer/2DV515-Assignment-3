@@ -13,6 +13,9 @@ namespace Backend.Models.Database
         [Required]
         public string WordTitle { get; set; }
         public ICollection<WordReference> WordReferences { get; set; }
+        public int Min { get; set; }
+        public int Max { get; set; }
+        public double CurrentCount { get; set; }
 
     }
 }

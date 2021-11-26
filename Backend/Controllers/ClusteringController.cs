@@ -17,7 +17,7 @@ namespace Backend.Controllers
         [HttpGet()]
         public async Task<IActionResult> GetAllUsers()
         {
-            return Ok(await _unitOfWork.Blogs.GetAllBlogsWithData());
+            return Ok(await _unitOfWork.Words.GetAllAsync());
         }
     }
 }
