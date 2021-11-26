@@ -6,7 +6,7 @@ namespace Backend.Models.Database
     {
         public int WordReferenceId { get; set; }
         [Required]
-        public int Count { get; set; }
+        public double Count { get; set; }
         public int BlogId { get; set; }
         public virtual Blog Blog { get; set; }
         public int WordId { get; set; }
