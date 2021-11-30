@@ -29,6 +29,25 @@ namespace Backend.Models.Services
             }
             return CreateCentroidDtoObject(centroids);
         }
+
+        public async Task<List<CentroidDto>> FindKMeansCluster(int k)
+        {
+            var wordList = await _unitOfWork.Words.GetDistinctWords();
+            var blogs = await _unitOfWork.Blogs.GetAllBlogsWithData();
+            var centroids = CreateAndPlaceInitialCentroids(k, wordList);
+            var oldCentroids = new List<Centroid>();
+
+            while (true)
+            {
+                centroids.ForEach(c => ClearCentroidAssignments(c));
+                blogs.ForEach(b => AssignBlogsToClosestCentroid(b, centroids));
+                centroids.ForEach(c => RecalculateCentroidCenter(c));
+
+                if (centroids == oldCentroids) break;
+                else oldCentroids = centroids;
+            }
+            return CreateCentroidDtoObject(centroids);
+        }
         private void PrintOutCentroids(List<Centroid> centroids)
         {
             int cent = 0;
@@ -66,7 +85,7 @@ namespace Backend.Models.Services
             }
             return centroidsDto;
         }
-        private List<Centroid> AssignBlogsToClosestCentroid(Blog b, List<Centroid> centroids)
+        private void AssignBlogsToClosestCentroid(Blog b, List<Centroid> centroids)
         {
             double distance = Double.MaxValue;
             Centroid best = new Centroid();
@@ -81,7 +100,6 @@ namespace Backend.Models.Services
                 }
             }
             best.Assignments.Add(b);
-            return centroids;
         }
         private Centroid RecalculateCentroidCenter(Centroid c)
         {
@@ -121,12 +139,9 @@ namespace Backend.Models.Services
             return centroids;
         }
 
-        private void ClearCentroidAssignments(Centroid c)
-        {
-            c.Assignments.Clear();
-        }
+        private void ClearCentroidAssignments(Centroid c) => c.Assignments.Clear();
 
-        public double PearsonCentroid(Centroid A, Blog B)
+        private double PearsonCentroid(Centroid A, Blog B)
         {
             //Init
             double sumA = 0, sumB = 0, sumAsq = 0, sumBsq = 0, pSum = 0;
@@ -137,7 +152,7 @@ namespace Backend.Models.Services
             foreach (var word in A.Words)
             {
                 var wA = word;
-                var wB = B.Words.FirstOrDefault(x => x.WordTitle == wA.WordTitle);
+                var wB = B.Words.ElementAt(n);
                 sumA += wA.Amount;
                 sumB += wB.Amount;
                 sumAsq += wA.Amount * wA.Amount;

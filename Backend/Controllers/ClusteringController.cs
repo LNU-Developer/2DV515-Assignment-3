@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Backend.Models.Repositories;
-using System.Linq;
 using Backend.Models.Services;
 using System.Threading.Tasks;
 
@@ -18,17 +17,16 @@ namespace Backend.Controllers
             _clusteringService = clusteringService;
         }
 
-        [HttpGet()]
-        public IActionResult GetAllUsers()
-        {
-            var data = _unitOfWork.Blogs.GetAllBlogsWithDataReference();
-            return Ok(data.FirstOrDefault());
-        }
-
-        [HttpGet("kmeans")]
+        [HttpGet("kmeans-iterations")]
         public async Task<IActionResult> GetKmeansAsync(int k, int iterations)
         {
             return Ok(await _clusteringService.FindKMeansCluster(k, iterations));
+        }
+
+        [HttpGet("kmeans-self")]
+        public async Task<IActionResult> GetKmeansAsync(int k)
+        {
+            return Ok(await _clusteringService.FindKMeansCluster(k));
         }
     }
 }

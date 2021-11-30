@@ -14,7 +14,7 @@ namespace Backend.Models.Repositories
         public async Task<List<Word>> GetDistinctWords()
         {
             var distinctWordList = new List<Word>();
-            var wordList = await _context.Words.ToListAsync();
+            var wordList = await _context.Words.OrderBy(x => x.WordTitle).ToListAsync();
             foreach (var word in wordList)
             {
                 if (!distinctWordList.Any(x => x.WordTitle == word.WordTitle))
