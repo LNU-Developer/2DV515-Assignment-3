@@ -38,12 +38,13 @@ namespace Backend
             {
                 optionsBuilder.UseSqlite(keepAliveConnection);
             });
-
+            services.AddAutoMapper(typeof(Startup));
             services.AddTransient<EuclideanDistanceService>();
             services.AddTransient<PearsonCorrelationService>();
             services.AddTransient<ItemBasedCollaborativeFilteringService>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
-            services.AddTransient<ClusteringService>();
+            services.AddTransient<KmeansService>();
+            services.AddTransient<HierarchicalService>();
 
             services.AddCors(options =>
             {
@@ -59,7 +60,7 @@ namespace Backend
             services.AddControllers().AddNewtonsoftJson(options =>
                {
                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-               }); ;
+               });
             services.AddRouting(options => options.LowercaseUrls = true);
 
             services.AddSwaggerGen(c =>
@@ -88,7 +89,11 @@ namespace Backend
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Backend v1"));
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Backend v1");
+                    c.ConfigObject.AdditionalItems.Add("syntaxHighlight", false);
+                });
             }
 
             app.UseCors("BackendCors");

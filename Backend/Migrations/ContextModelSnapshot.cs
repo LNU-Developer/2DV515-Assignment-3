@@ -93,6 +93,15 @@ namespace Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<double>("Amount")
+                        .HasColumnType("REAL");
+
+                    b.Property<int>("Max")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Min")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("WordTitle")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -102,28 +111,19 @@ namespace Backend.Migrations
                     b.ToTable("Words");
                 });
 
-            modelBuilder.Entity("Backend.Models.Database.WordReference", b =>
+            modelBuilder.Entity("BlogWord", b =>
                 {
-                    b.Property<int>("WordReferenceId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("BlogsBlogId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("BlogId")
+                    b.Property<int>("WordsWordId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Count")
-                        .HasColumnType("INTEGER");
+                    b.HasKey("BlogsBlogId", "WordsWordId");
 
-                    b.Property<int>("WordId")
-                        .HasColumnType("INTEGER");
+                    b.HasIndex("WordsWordId");
 
-                    b.HasKey("WordReferenceId");
-
-                    b.HasIndex("BlogId");
-
-                    b.HasIndex("WordId");
-
-                    b.ToTable("WordReferences");
+                    b.ToTable("BlogWord");
                 });
 
             modelBuilder.Entity("Backend.Models.Database.Rating", b =>
@@ -145,28 +145,19 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.Database.WordReference", b =>
+            modelBuilder.Entity("BlogWord", b =>
                 {
-                    b.HasOne("Backend.Models.Database.Blog", "Blog")
-                        .WithMany("WordReferences")
-                        .HasForeignKey("BlogId")
+                    b.HasOne("Backend.Models.Database.Blog", null)
+                        .WithMany()
+                        .HasForeignKey("BlogsBlogId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.Database.Word", "Word")
-                        .WithMany("WordReferences")
-                        .HasForeignKey("WordId")
+                    b.HasOne("Backend.Models.Database.Word", null)
+                        .WithMany()
+                        .HasForeignKey("WordsWordId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Blog");
-
-                    b.Navigation("Word");
-                });
-
-            modelBuilder.Entity("Backend.Models.Database.Blog", b =>
-                {
-                    b.Navigation("WordReferences");
                 });
 
             modelBuilder.Entity("Backend.Models.Database.Movie", b =>
@@ -177,11 +168,6 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Models.Database.User", b =>
                 {
                     b.Navigation("Ratings");
-                });
-
-            modelBuilder.Entity("Backend.Models.Database.Word", b =>
-                {
-                    b.Navigation("WordReferences");
                 });
 #pragma warning restore 612, 618
         }
