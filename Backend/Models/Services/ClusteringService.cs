@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
+using Backend.Models.Database;
 using Backend.Models.Repositories;
 using Backend.Models.Clustering;
-using System.Collections.Generic;
-using Backend.Models.Database;
-using System;
 using System.Linq;
 namespace Backend.Models.Services
 {
@@ -15,42 +15,87 @@ namespace Backend.Models.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task FindKMeansCluster(int k, int iterations)
+        public async Task<List<CentroidDto>> FindKMeansCluster(int k, int iterations)
         {
-            var wordList = await _unitOfWork.Words.GetAllWordsWithWordReferences();
-            var blogs = _unitOfWork.Blogs.GetAllBlogsWithDataReference();
-
+            var wordList = await _unitOfWork.Words.GetDistinctWords();
+            var blogs = await _unitOfWork.Blogs.GetAllBlogsWithData();
             var centroids = CreateAndPlaceInitialCentroids(k, wordList);
+
+            for (int i = 0; i < iterations; i++)
+            {
+                centroids.ForEach(c => ClearCentroidAssignments(c));
+                blogs.ForEach(b => AssignBlogsToClosestCentroid(b, centroids));
+                centroids.ForEach(c => RecalculateCentroidCenter(c));
+            }
+            return CreateCentroidDtoObject(centroids);
+        }
+        private void PrintOutCentroids(List<Centroid> centroids)
+        {
+            int cent = 0;
+            // int blogCount = 0;
             foreach (var item in centroids)
             {
-                var replacedCentroids = RecalculateCentroidCenter(item);
+                cent++;
+                Console.WriteLine("Centroid " + cent);
+                Console.WriteLine("Assignments " + item.Assignments.Count);
+                // foreach (var blog in item.Assignments)
+                // {
+                //     blogCount++;
+                //     Console.WriteLine(blogCount);
+                //     Console.WriteLine(blog.BlogTitle);
+                // }
+                // foreach (var word in item.Words)
+                // {
+                //     Console.WriteLine(word.WordTitle);
+                //     Console.WriteLine(word.Amount);
+                // }
             }
-
-
-
         }
+        private List<CentroidDto> CreateCentroidDtoObject(List<Centroid> centroids)
+        {
+            var centroidsDto = new List<CentroidDto>();
+            foreach (var c in centroids)
+            {
+                var tmpC = new CentroidDto();
+                tmpC.Assignments = new List<BlogDto>();
+                foreach (var blog in c.Assignments)
+                {
+                    tmpC.Assignments.Add(new BlogDto { BlogTitle = blog.BlogTitle });
+                }
+                centroidsDto.Add(tmpC);
+            }
+            return centroidsDto;
+        }
+        private List<Centroid> AssignBlogsToClosestCentroid(Blog b, List<Centroid> centroids)
+        {
+            double distance = Double.MaxValue;
+            Centroid best = new Centroid();
 
-        public Centroid RecalculateCentroidCenter(Centroid c)
+            foreach (Centroid c in centroids)
+            {
+                double cDist = PearsonCentroid(c, b);
+                if (cDist < distance)
+                {
+                    best = c;
+                    distance = cDist;
+                }
+            }
+            best.Assignments.Add(b);
+            return centroids;
+        }
+        private Centroid RecalculateCentroidCenter(Centroid c)
         {
             //Find average count for each word
-            for (int k = 0; k < c.Words.Count; k++)
+            foreach (var word in c.Words)
             {
-                double avg = 0;
-
-                //Iterate over all blogs assigned to this centroid
-                WordReference wordReference = null;
-                foreach (Blog b in c.Assignments)
-                {
-                    wordReference = b.WordReferences.FirstOrDefault(i => i.WordId == c.Words[k].WordId);
-                    avg += wordReference.Count;
-                }
-                avg /= c.Assignments.Count;
-
-                //Update word count for the centroid
-                wordReference.Count = avg;
+                double average = 0;
+                foreach (var b in c.Assignments)
+                    average += word.Amount;
+                average /= c.Assignments.Count;
+                //Update count for the centroid
+                word.Amount = average;
             }
             return c;
-
         }
 
         private List<Centroid> CreateAndPlaceInitialCentroids(int k, List<Word> wordList)
@@ -58,22 +103,53 @@ namespace Backend.Models.Services
             List<Centroid> centroids = new List<Centroid>();
             for (int c = 0; c < k; c++)
             {
-                Centroid centroid = new Centroid();
-                Random random = new Random();
-                for (int w = 0; w < wordList.Count; w++)
+                var centroid = new Centroid();
+                var random = new Random();
+                centroid.Words = new List<WordDto>();
+                centroid.Assignments = new List<Blog>();
+                foreach (var word in wordList)
                 {
-                    Word word = new Word
+                    var randomValue = random.Next(word.Min, word.Max);
+                    centroid.Words.Add(new WordDto
                     {
-                        WordId = wordList[w].WordId,
-                        WordTitle = wordList[w].WordTitle,
-                        WordReferences = wordList[w].WordReferences,
-                        CurrentCount = random.Next(wordList[w].Min, wordList[w].Max)
-                    };
-                    centroid.Words.Add(word);
+                        WordTitle = word.WordTitle,
+                        Amount = randomValue
+                    });
                 }
                 centroids.Add(centroid);
             }
             return centroids;
+        }
+
+        private void ClearCentroidAssignments(Centroid c)
+        {
+            c.Assignments.Clear();
+        }
+
+        public double PearsonCentroid(Centroid A, Blog B)
+        {
+            //Init
+            double sumA = 0, sumB = 0, sumAsq = 0, sumBsq = 0, pSum = 0;
+
+            //Counter for amount of total words
+            int n = 0;
+
+            foreach (var word in A.Words)
+            {
+                var wA = word;
+                var wB = B.Words.FirstOrDefault(x => x.WordTitle == wA.WordTitle);
+                sumA += wA.Amount;
+                sumB += wB.Amount;
+                sumAsq += wA.Amount * wA.Amount;
+                sumBsq += wB.Amount * wB.Amount;
+                pSum += wA.Amount * wB.Amount;
+                n++;
+            }
+
+            //Calculate
+            double num = pSum - ((sumA * sumB) / n);
+            double den = Math.Sqrt((sumAsq - Math.Pow(sumA, 2.0) / n) * (sumBsq - Math.Pow(sumB, 2.0) / n));
+            return 1.0 - num / den;
         }
     }
 }

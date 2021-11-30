@@ -14,7 +14,6 @@ namespace Backend.Models.Repositories
             Ratings = new RatingRepository(_context);
             Users = new UserRepository(_context);
             Words = new WordRepository(_context);
-            WordReferences = new WordReferenceRepository(_context);
             Blogs = new BlogRepository(_context);
         }
 
@@ -23,7 +22,6 @@ namespace Backend.Models.Repositories
         public IUserRepository Users { get; private set; }
         public IBlogRepository Blogs { get; private set; }
         public IWordRepository Words { get; private set; }
-        public IWordReferenceRepository WordReferences { get; private set; }
 
         public Task<int> CompleteAsync()
         {

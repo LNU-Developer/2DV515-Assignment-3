@@ -43,6 +43,7 @@ namespace Backend
             services.AddTransient<PearsonCorrelationService>();
             services.AddTransient<ItemBasedCollaborativeFilteringService>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
+            services.AddTransient<ClusteringService>();
 
             services.AddCors(options =>
             {
@@ -115,31 +116,48 @@ namespace Backend
 
                 for (int i = 1; i < unstructuredWords.Length; i++) //Index 0 in this case is the column title Blogs, and not applicable for this dataset
                     words.Add(new Word { WordTitle = unstructuredWords[i] });
-                context.Words.AddRange(words);
 
+                var rowList = new List<string>();
                 while (!reader.EndOfStream)
+                    rowList.Add(reader.ReadLine());
+
+                foreach (var row in rowList)
                 {
-                    var line = reader.ReadLine();
-                    var values = line.Split('\t');
-                    var blog = new Blog();
-                    blog.BlogTitle = values[0];
-                    context.Blogs.Add(blog);
+                    var values = row.Split('\t');
+                    //Figure out max and min of a specific word
                     for (int i = 1; i < values.Length; i++)
                     {
+
                         var count = Int32.Parse(values[i]);
                         var max = words[i - 1].Max;
                         var min = words[i - 1].Min;
-                        if (max < count) words[i - 1].Max = count;  //Solving structuring problem in readin of the data.
-                        if (min > count) words[i - 1].Min = count;  //Solving structuring problem in readin of the data.
-
-                        var wordReference = new WordReference
-                        {
-                            Blog = blog,
-                            WordId = i,
-                            Count = count
-                        };
-                        context.WordReferences.Add(wordReference);
+                        if (max < count) words[i - 1].Max = count;
+                        if (min > count) words[i - 1].Min = count;
                     }
+                }
+
+                foreach (var row in rowList)
+                {
+                    var values = row.Split('\t');
+
+                    var blog = new Blog();
+                    blog.BlogTitle = values[0];
+
+                    for (int i = 1; i < values.Length; i++)
+                    {
+                        var count = Int32.Parse(values[i]);
+
+                        var word = new Word
+                        {
+                            WordTitle = words[i - 1].WordTitle,
+                            Amount = count,
+                            Min = words[i - 1].Min,
+                            Max = words[i - 1].Max,
+                        };
+                        blog.Words.Add(word);
+
+                    }
+                    context.Blogs.Add(blog);
                 }
                 context.SaveChanges();
             }

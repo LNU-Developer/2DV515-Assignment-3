@@ -12,11 +12,11 @@ namespace Backend.Models.Repositories
         }
         public async Task<List<Blog>> GetAllBlogsWithData()
         {
-            return await _context.Blogs.Include(x => x.WordReferences).ThenInclude(y => y.Word).ToListAsync();
+            return await _context.Blogs.Include(y => y.Words).ToListAsync();
         }
-        public IIncludableQueryable<Blog, Word> GetAllBlogsWithDataReference()
+        public IIncludableQueryable<Blog, ICollection<Word>> GetAllBlogsWithDataReference()
         {
-            return _context.Blogs.Include(x => x.WordReferences).ThenInclude(y => y.Word);
+            return _context.Blogs.Include(x => x.Words);
         }
     }
 }

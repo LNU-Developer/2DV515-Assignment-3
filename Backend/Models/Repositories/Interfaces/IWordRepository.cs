@@ -1,11 +1,10 @@
 using Backend.Models.Database;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 namespace Backend.Models.Repositories
 {
     public interface IWordRepository : IRepository<Word>
     {
-        Task<List<Word>> GetAllWordsWithWordReferences();
+        Task<List<Word>> GetDistinctWords();
     }
-
 }

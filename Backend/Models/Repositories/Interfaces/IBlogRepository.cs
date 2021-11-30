@@ -7,7 +7,7 @@ namespace Backend.Models.Repositories
     public interface IBlogRepository : IRepository<Blog>
     {
         Task<List<Blog>> GetAllBlogsWithData();
-        IIncludableQueryable<Blog, Word> GetAllBlogsWithDataReference();
+        IIncludableQueryable<Blog, ICollection<Word>> GetAllBlogsWithDataReference();
     }
 
 }

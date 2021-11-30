@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Backend.Models.Repositories;
+using System.Linq;
+using Backend.Models.Services;
+using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -9,15 +11,24 @@ namespace Backend.Controllers
     public class ClusteringController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
-        public ClusteringController(IUnitOfWork unitOfWork)
+        private readonly ClusteringService _clusteringService;
+        public ClusteringController(IUnitOfWork unitOfWork, ClusteringService clusteringService)
         {
             _unitOfWork = unitOfWork;
+            _clusteringService = clusteringService;
         }
 
         [HttpGet()]
-        public async Task<IActionResult> GetAllUsers()
+        public IActionResult GetAllUsers()
         {
-            return Ok(await _unitOfWork.Words.GetAllAsync());
+            var data = _unitOfWork.Blogs.GetAllBlogsWithDataReference();
+            return Ok(data.FirstOrDefault());
+        }
+
+        [HttpGet("kmeans")]
+        public async Task<IActionResult> GetKmeansAsync(int k, int iterations)
+        {
+            return Ok(await _clusteringService.FindKMeansCluster(k, iterations));
         }
     }
 }

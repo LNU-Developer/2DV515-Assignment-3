@@ -7,12 +7,12 @@ namespace Backend.Models.Database
     {
         public Blog()
         {
-            WordReferences = new HashSet<WordReference>();
+            Words = new HashSet<Word>();
         }
         public int BlogId { get; set; }
         [Required]
         public string BlogTitle { get; set; }
-        public ICollection<WordReference> WordReferences { get; set; }
+        public ICollection<Word> Words { get; set; }
 
     }
 }

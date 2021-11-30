@@ -1,18 +1,31 @@
-using Backend.Models.Database;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Backend.Models.Database;
+using Microsoft.EntityFrameworkCore;
 namespace Backend.Models.Repositories
 {
     public class WordRepository : Repository<Context, Word>, IWordRepository
     {
         public WordRepository(Context context) : base(context)
         {
-
         }
-        public async Task<List<Word>> GetAllWordsWithWordReferences()
+
+        public async Task<List<Word>> GetDistinctWords()
         {
-            return await _context.Words.Include(x => x.WordReferences).ToListAsync();
+            var distinctWordList = new List<Word>();
+            var wordList = await _context.Words.ToListAsync();
+            foreach (var word in wordList)
+            {
+                if (!distinctWordList.Any(x => x.WordTitle == word.WordTitle))
+                    distinctWordList.Add(new Word
+                    {
+                        WordTitle = word.WordTitle,
+                        Min = word.Min,
+                        Max = word.Max
+                    });
+            }
+            return distinctWordList;
         }
     }
 }
