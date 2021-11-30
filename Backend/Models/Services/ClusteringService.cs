@@ -10,11 +10,7 @@ namespace Backend.Models.Services
     public class ClusteringService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public ClusteringService(IUnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
+        public ClusteringService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
         public async Task<List<CentroidDto>> FindKMeansCluster(int k, int iterations)
         {
             var wordList = await _unitOfWork.Words.GetDistinctWords();
@@ -29,7 +25,6 @@ namespace Backend.Models.Services
             }
             return CreateCentroidDtoObject(centroids);
         }
-
         public async Task<List<CentroidDto>> FindKMeansCluster(int k)
         {
             var wordList = await _unitOfWork.Words.GetDistinctWords();
@@ -47,28 +42,6 @@ namespace Backend.Models.Services
                 else oldCentroids = centroids;
             }
             return CreateCentroidDtoObject(centroids);
-        }
-        private void PrintOutCentroids(List<Centroid> centroids)
-        {
-            int cent = 0;
-            // int blogCount = 0;
-            foreach (var item in centroids)
-            {
-                cent++;
-                Console.WriteLine("Centroid " + cent);
-                Console.WriteLine("Assignments " + item.Assignments.Count);
-                // foreach (var blog in item.Assignments)
-                // {
-                //     blogCount++;
-                //     Console.WriteLine(blogCount);
-                //     Console.WriteLine(blog.BlogTitle);
-                // }
-                // foreach (var word in item.Words)
-                // {
-                //     Console.WriteLine(word.WordTitle);
-                //     Console.WriteLine(word.Amount);
-                // }
-            }
         }
         private List<CentroidDto> CreateCentroidDtoObject(List<Centroid> centroids)
         {
@@ -115,7 +88,6 @@ namespace Backend.Models.Services
             }
             return c;
         }
-
         private List<Centroid> CreateAndPlaceInitialCentroids(int k, List<Word> wordList)
         {
             List<Centroid> centroids = new List<Centroid>();
@@ -138,21 +110,16 @@ namespace Backend.Models.Services
             }
             return centroids;
         }
-
         private void ClearCentroidAssignments(Centroid c) => c.Assignments.Clear();
-
         private double PearsonCentroid(Centroid A, Blog B)
         {
-            //Init
             double sumA = 0, sumB = 0, sumAsq = 0, sumBsq = 0, pSum = 0;
-
-            //Counter for amount of total words
-            int n = 0;
+            int n = 0;  //Counter for amount of total words
 
             foreach (var word in A.Words)
             {
                 var wA = word;
-                var wB = B.Words.ElementAt(n);
+                var wB = B.Words.ElementAt(n); // Order repositories in a way that enables me to use ElementAt O(1) instead of potentually looping all words in O(n).
                 sumA += wA.Amount;
                 sumB += wB.Amount;
                 sumAsq += wA.Amount * wA.Amount;
@@ -160,7 +127,6 @@ namespace Backend.Models.Services
                 pSum += wA.Amount * wB.Amount;
                 n++;
             }
-
             //Calculate
             double num = pSum - ((sumA * sumB) / n);
             double den = Math.Sqrt((sumAsq - Math.Pow(sumA, 2.0) / n) * (sumBsq - Math.Pow(sumB, 2.0) / n));
