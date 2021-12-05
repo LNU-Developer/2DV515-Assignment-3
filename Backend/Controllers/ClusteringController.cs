@@ -37,9 +37,9 @@ namespace Backend.Controllers
         }
 
         [HttpGet("hierarchical")]
-        public Task<IActionResult> GetHierarchical()
+        public async Task<IActionResult> GetHierarchical()
         {
-            return Task.FromResult(Ok());
+            return Ok(_mapper.Map<List<ClusterDto>>(await _hierarchicalService.FindHierarchicalCluster()));
         }
     }
 }

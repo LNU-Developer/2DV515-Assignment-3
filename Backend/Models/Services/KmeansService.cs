@@ -80,6 +80,7 @@ namespace Backend.Models.Services
             {
                 var centroid = new Centroid();
                 var random = new Random();
+                centroid.Id = c;
                 centroid.Words = new List<Word>();
                 centroid.Assignments = new List<Blog>();
                 foreach (var word in wordList)

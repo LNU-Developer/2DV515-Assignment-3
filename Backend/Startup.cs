@@ -60,6 +60,7 @@ namespace Backend
             services.AddControllers().AddNewtonsoftJson(options =>
                {
                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                   options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                });
             services.AddRouting(options => options.LowercaseUrls = true);
 
