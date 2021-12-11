@@ -80,8 +80,9 @@ namespace Backend
                 using (var context = serviceScope.ServiceProvider.GetService<Context>())
                 {
                     context.Database.EnsureCreated();
-                    AddRecommendationData(context);
-                    AddClusterData(context);
+                    // AddRecommendationData(context);
+                    // AddClusterData(context);
+                    AddWikipediaData(context);
                 }
 
             }
@@ -110,7 +111,67 @@ namespace Backend
                 endpoints.MapControllers();
             });
         }
+        private static void AddWikipediaData(Context context)
+        {
 
+            var WORDS = @"./SeedData/wikipedia/Words/";
+            var hashWords = new Dictionary<string, int>();
+
+            var wordFiles = Directory.GetFiles(WORDS, "", SearchOption.AllDirectories);
+
+            var wordMapList = new List<WordMap>();
+            var pageWordList = new List<PageWord>();
+            var pageList = new List<Page>();
+
+            for (int p = 0; p < wordFiles.Count(); p++)
+            {
+                var text = File.ReadAllText(wordFiles[p]);
+                var words = text.Split(" ");
+                var page = new Page();
+                page.Url = wordFiles[p].Replace("./SeedData/wikipedia/Words", "");
+                page.PageId = p + 1;
+                Console.WriteLine(page.Url);
+                pageList.Add(page);
+                for (int w = 0; w < words.Length; w++)
+                {
+                    var pageWord = new PageWord
+                    {
+                        WordHashMapId = GetIdForWord(hashWords, words[w]),
+                        PageId = p + 1
+                    };
+                    pageWordList.Add(pageWord);
+                }
+                pageList.Add(page);
+            }
+            context.Pages.AddRange(pageList);
+            context.PageWords.AddRange(pageWordList);
+            context.SaveChanges();
+
+            int counter = 1;
+            foreach (var item in hashWords)
+            {
+                wordMapList.Add(new WordMap
+                {
+                    WordMapId = counter,
+                    Word = item.Key
+                });
+                counter++;
+            }
+            context.WordMaps.AddRange(wordMapList);
+            context.SaveChanges();
+        }
+
+        private static int GetIdForWord(Dictionary<string, int> dictionary, string word)
+        {
+            if (dictionary.ContainsKey(word))
+                return dictionary[word];
+            else
+            {
+                int id = dictionary.Count + 1;
+                dictionary.Add(word, id);
+                return id;
+            }
+        }
         private static void AddClusterData(Context context)
         {
             using (var reader = new StreamReader("SeedData/blogdata.txt"))

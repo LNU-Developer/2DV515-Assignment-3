@@ -16,6 +16,9 @@ namespace Backend.Models.Database
         public virtual DbSet<Rating> Ratings { get; set; }
         public virtual DbSet<Word> Words { get; set; }
         public virtual DbSet<Blog> Blogs { get; set; }
+        public virtual DbSet<Page> Pages { get; set; }
+        public virtual DbSet<PageWord> PageWords { get; set; }
+        public virtual DbSet<WordMap> WordMaps { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

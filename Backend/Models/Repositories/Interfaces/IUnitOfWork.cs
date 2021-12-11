@@ -10,6 +10,10 @@ namespace Backend.Models.Repositories
         IRatingRepository Ratings { get; }
         IWordRepository Words { get; }
         IBlogRepository Blogs { get; }
+        IPageRepository Pages { get; }
+        IPageWordRepository PageWords { get; }
+        IWordMapRepository WordMaps { get; }
+
         Task<int> CompleteAsync();
         int Complete();
     }
