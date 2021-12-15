@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Backend.Models.Repositories;
 using System.Threading.Tasks;
+using Backend.Models.Services;
+using AutoMapper;
+using System.Collections.Generic;
+using Backend.DTOs;
 
 namespace Backend.Controllers
 {
@@ -8,16 +11,18 @@ namespace Backend.Controllers
     [Route("[controller]")]
     public class SearchController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        public SearchController(IUnitOfWork unitOfWork)
+        private readonly IMapper _mapper;
+        private readonly SearchService _searchService;
+        public SearchController(IMapper mapper, SearchService searchService)
         {
-            _unitOfWork = unitOfWork;
+            _searchService = searchService;
+            _mapper = mapper;
         }
 
         [HttpGet("test")]
-        public async Task<IActionResult> Test()
+        public async Task<IActionResult> Test(string word, int k)
         {
-            return Ok(await _unitOfWork.Pages.GetAllAsync());
+            return Ok(_mapper.Map<List<ScoreDto>>(await _searchService.FindKSearchResult(word, k)));
         }
     }
 }

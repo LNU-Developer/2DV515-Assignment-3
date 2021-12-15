@@ -6,8 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Backend.Models.Services;
 using Backend.Models.Database;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.Sqlite;
 using TinyCsvParser;
 using Backend.Models.CsvMappings;
 using System.Text;
@@ -17,6 +15,7 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend
 {
@@ -31,13 +30,28 @@ namespace Backend
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionString = "DataSource=recommendationdb;mode=memory;cache=shared";      // Please note that the in memory SQL is not thread-safe, as such it is only used here to showcase the different ML tools using this database.
-            var keepAliveConnection = new SqliteConnection(connectionString);
-            keepAliveConnection.Open();
-            services.AddDbContext<Context>(optionsBuilder =>
-            {
-                optionsBuilder.UseSqlite(keepAliveConnection);
-            });
+            // var connectionString = "DataSource=recommendationdb;mode=memory;cache=shared";      // Please note that the in memory SQL is not thread-safe, as such it is only used here to showcase the different ML tools using this database.
+            // var keepAliveConnection = new SqliteConnection(connectionString);
+            // keepAliveConnection.Open();
+            // services.AddDbContext<Context>(optionsBuilder =>
+            // {
+            //     optionsBuilder.UseSqlite(keepAliveConnection);
+            // });
+
+            var dbConnectionString = Environment.GetEnvironmentVariable("DBCONNECTIONSTRING") is not null ? Environment.GetEnvironmentVariable("DBCONNECTIONSTRING") : Configuration["ConnectionStrings:DBCONNECTIONSTRING"];
+
+            services.AddDbContextPool<Context>(
+                dbContextOptions => dbContextOptions
+                    .UseMySql(dbConnectionString,
+                        new MySqlServerVersion(new Version(8, 0, 21)),
+                        mySqlOptions =>
+                        {
+                            mySqlOptions.EnableRetryOnFailure(10, TimeSpan.FromSeconds(30), null);
+                        })
+            // .LogTo(Console.WriteLine) //Enable logging in Console.
+            // .EnableSensitiveDataLogging()
+            // .EnableDetailedErrors()
+            );
             services.AddAutoMapper(typeof(Startup));
             services.AddTransient<EuclideanDistanceService>();
             services.AddTransient<PearsonCorrelationService>();
@@ -45,6 +59,7 @@ namespace Backend
             services.AddTransient<IUnitOfWork, UnitOfWork>();
             services.AddTransient<KmeansService>();
             services.AddTransient<HierarchicalService>();
+            services.AddTransient<SearchService>();
 
             services.AddCors(options =>
             {
@@ -79,10 +94,11 @@ namespace Backend
             {
                 using (var context = serviceScope.ServiceProvider.GetService<Context>())
                 {
-                    context.Database.EnsureCreated();
+                    // context.Database.EnsureCreated();
+                    // context.Database.Migrate();
                     // AddRecommendationData(context);
                     // AddClusterData(context);
-                    AddWikipediaData(context);
+                    // AddWikipediaData(context);
                 }
 
             }

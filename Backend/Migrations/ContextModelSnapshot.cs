@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace Backend.Migrations
 {
     [DbContext(typeof(Context))]
@@ -13,17 +15,18 @@ namespace Backend.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.4");
+                .HasAnnotation("ProductVersion", "6.0.1")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("Backend.Models.Database.Blog", b =>
                 {
                     b.Property<int>("BlogId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("BlogTitle")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("BlogId");
 
@@ -34,34 +37,67 @@ namespace Backend.Migrations
                 {
                     b.Property<int>("MovieId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("MovieTitle")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("MovieYear")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("MovieId");
 
                     b.ToTable("Movies");
                 });
 
+            modelBuilder.Entity("Backend.Models.Database.Page", b =>
+                {
+                    b.Property<int>("PageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("PageId");
+
+                    b.ToTable("Pages");
+                });
+
+            modelBuilder.Entity("Backend.Models.Database.PageWord", b =>
+                {
+                    b.Property<int>("PageWordId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("PageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WordHashMapId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PageWordId");
+
+                    b.HasIndex("PageId");
+
+                    b.ToTable("PageWords");
+                });
+
             modelBuilder.Entity("Backend.Models.Database.Rating", b =>
                 {
                     b.Property<int>("RatingId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("MovieId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<double>("Score")
-                        .HasColumnType("REAL");
+                        .HasColumnType("double");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("RatingId");
 
@@ -76,11 +112,11 @@ namespace Backend.Migrations
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("UserId");
 
@@ -91,39 +127,66 @@ namespace Backend.Migrations
                 {
                     b.Property<int>("WordId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<double>("Amount")
-                        .HasColumnType("REAL");
+                        .HasColumnType("double");
 
                     b.Property<int>("Max")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("Min")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<string>("WordTitle")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("WordId");
 
                     b.ToTable("Words");
                 });
 
+            modelBuilder.Entity("Backend.Models.Database.WordMap", b =>
+                {
+                    b.Property<int>("WordMapId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Word")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("WordMapId");
+
+                    b.HasIndex("Word");
+
+                    b.ToTable("WordMaps");
+                });
+
             modelBuilder.Entity("BlogWord", b =>
                 {
                     b.Property<int>("BlogsBlogId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.Property<int>("WordsWordId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("BlogsBlogId", "WordsWordId");
 
                     b.HasIndex("WordsWordId");
 
                     b.ToTable("BlogWord");
+                });
+
+            modelBuilder.Entity("Backend.Models.Database.PageWord", b =>
+                {
+                    b.HasOne("Backend.Models.Database.Page", "Page")
+                        .WithMany("PageWords")
+                        .HasForeignKey("PageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Page");
                 });
 
             modelBuilder.Entity("Backend.Models.Database.Rating", b =>
@@ -163,6 +226,11 @@ namespace Backend.Migrations
             modelBuilder.Entity("Backend.Models.Database.Movie", b =>
                 {
                     b.Navigation("Ratings");
+                });
+
+            modelBuilder.Entity("Backend.Models.Database.Page", b =>
+                {
+                    b.Navigation("PageWords");
                 });
 
             modelBuilder.Entity("Backend.Models.Database.User", b =>
