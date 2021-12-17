@@ -33,6 +33,28 @@ namespace Backend.Migrations
                     b.ToTable("Blogs");
                 });
 
+            modelBuilder.Entity("Backend.Models.Database.Link", b =>
+                {
+                    b.Property<int>("LinkId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("LinkId");
+
+                    b.HasIndex("PageId");
+
+                    b.ToTable("Links");
+                });
+
             modelBuilder.Entity("Backend.Models.Database.Movie", b =>
                 {
                     b.Property<int>("MovieId")
@@ -69,6 +91,9 @@ namespace Backend.Migrations
                 {
                     b.Property<int>("PageWordId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
                         .HasColumnType("int");
 
                     b.Property<int>("PageId")
@@ -178,6 +203,17 @@ namespace Backend.Migrations
                     b.ToTable("BlogWord");
                 });
 
+            modelBuilder.Entity("Backend.Models.Database.Link", b =>
+                {
+                    b.HasOne("Backend.Models.Database.Page", "Page")
+                        .WithMany("Links")
+                        .HasForeignKey("PageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Page");
+                });
+
             modelBuilder.Entity("Backend.Models.Database.PageWord", b =>
                 {
                     b.HasOne("Backend.Models.Database.Page", "Page")
@@ -230,6 +266,8 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Database.Page", b =>
                 {
+                    b.Navigation("Links");
+
                     b.Navigation("PageWords");
                 });
 

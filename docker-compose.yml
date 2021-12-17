@@ -12,6 +12,17 @@ services:
     depends_on:
       - database
 
+  frontend:
+    container_name: Frontend
+    image: frontend:latest
+    environment:
+      - NODE_ENV=development
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+
   database:
     image: mysql:latest
     container_name: Database

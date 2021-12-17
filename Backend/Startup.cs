@@ -95,10 +95,11 @@ namespace Backend
                 using (var context = serviceScope.ServiceProvider.GetService<Context>())
                 {
                     // context.Database.EnsureCreated();
-                    // context.Database.Migrate();
+                    context.Database.Migrate();
                     // AddRecommendationData(context);
                     // AddClusterData(context);
                     // AddWikipediaData(context);
+                    // AddLinkData(context);
                 }
 
             }
@@ -135,7 +136,7 @@ namespace Backend
 
             var wordFiles = Directory.GetFiles(WORDS, "", SearchOption.AllDirectories);
 
-            var wordMapList = new List<WordMap>();
+            var wordMapList = new HashSet<WordMap>();
             var pageWordList = new List<PageWord>();
             var pageList = new List<Page>();
 
@@ -148,14 +149,17 @@ namespace Backend
                 page.PageId = p + 1;
                 Console.WriteLine(page.Url);
                 pageList.Add(page);
+                int order = 1;
                 for (int w = 0; w < words.Length; w++)
                 {
                     var pageWord = new PageWord
                     {
                         WordHashMapId = GetIdForWord(hashWords, words[w]),
-                        PageId = p + 1
+                        PageId = p + 1,
+                        Order = order
                     };
                     pageWordList.Add(pageWord);
+                    order++;
                 }
                 pageList.Add(page);
             }
@@ -174,6 +178,30 @@ namespace Backend
                 counter++;
             }
             context.WordMaps.AddRange(wordMapList);
+            context.SaveChanges();
+        }
+
+        private void AddLinkData(Context context)
+        {
+            var LINKS = @"./SeedData/wikipedia/Links/";
+            var linkFiles = Directory.GetFiles(LINKS, "", SearchOption.AllDirectories);
+            var linkList = new List<Link>();
+            for (int p = 0; p < linkFiles.Count(); p++)
+            {
+                var text = File.ReadAllText(linkFiles[p]);
+                var words = text.Split("\n");
+                int order = 1;
+                for (int w = 0; w < words.Length; w++)
+                {
+                    var link = new Link();
+                    link.PageId = p + 1;
+                    link.Url = words[w];
+                    link.Order = order;
+                    linkList.Add(link);
+                    order++;
+                }
+            }
+            context.Links.AddRange(linkList);
             context.SaveChanges();
         }
 

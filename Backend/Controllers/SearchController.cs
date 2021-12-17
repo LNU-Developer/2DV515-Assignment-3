@@ -19,8 +19,8 @@ namespace Backend.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("test")]
-        public async Task<IActionResult> Test(string word, int k)
+        [HttpGet("")]
+        public async Task<IActionResult> Search(string word, int k)
         {
             return Ok(_mapper.Map<List<ScoreDto>>(await _searchService.FindKSearchResult(word, k)));
         }

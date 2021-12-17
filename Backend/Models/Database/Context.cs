@@ -19,7 +19,7 @@ namespace Backend.Models.Database
         public virtual DbSet<Page> Pages { get; set; }
         public virtual DbSet<PageWord> PageWords { get; set; }
         public virtual DbSet<WordMap> WordMaps { get; set; }
-
+        public virtual DbSet<Link> Links { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
         }
